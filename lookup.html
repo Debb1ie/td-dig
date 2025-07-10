@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNS Lookup Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+         :root {
+            --neon-green: #39ff14;
+            --dark-green: #0a2900;
+            --black: #000000;
+            --dark-gray: #121212;
+            --medium-gray: #1e1e1e;
+            --light-gray: #333;
+            --white: #e0e0e0;
+            --text-glow: 0 0 5px var(--neon-green), 0 0 10px var(--neon-green);
+            --box-glow: 0 0 10px var(--neon-green), 0 0 20px rgba(57, 255, 20, 0.3);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--black);
+            color: var(--white);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        /* Navigation */
+        
+        nav {
+            background-color: var(--black);
+            border-bottom: 1px solid var(--neon-green);
+            box-shadow: var(--box-glow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.5rem;
+            text-shadow: var(--text-glow);
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 30px;
+        }
+        
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: var(--transition);
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--neon-green);
+            text-shadow: var(--text-glow);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: var(--neon-green);
+            bottom: -5px;
+            left: 0;
+            transition: var(--transition);
+        }
+        
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+            box-shadow: var(--text-glow);
+        }
+        /* Page System */
+        
+        .page {
+            display: none;
+            min-height: calc(100vh - 200px);
+            padding: 50px 0;
+        }
+        
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* Header */
+        
+        .page-header {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1639762681057-408e52192e55?q=80&w=2232&auto=format&fit=crop') no-repeat center center/cover;
+            padding: 80px 0;
+            text-align: center;
+            border-bottom: 1px solid var(--neon-green);
+            margin-bottom: 50px;
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--neon-green);
+            text-shadow: var(--text-glow);
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+            color: var(--white);
+        }
+        /* Tool Page Specific */
+        
+        .tool-container {
+            background-color: var(--dark-gray);
+            border: 1px solid var(--neon-green);
+            border-radius: 5px;
+            padding: 30px;
+            box-shadow: var(--box-glow);
+            margin-bottom: 40px;
+        }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            background-color: var(--medium-gray);
+            border: 1px solid var(--light-gray);
+            border-radius: 5px 0 0 5px;
+            font-size: 1rem;
+            outline: none;
+            color: var(--white);
+            transition: var(--transition);
+        }
+        
+        input[type="text"]:focus {
+            border-color: var(--neon-green);
+            box-shadow: var(--text-glow);
+        }
+        
+        button {
+            background-color: var(--dark-green);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+            padding: 15px 25px;
+            cursor: pointer;
+            border-radius: 0 5px 5px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        button:hover {
+            background-color: var(--neon-green);
+            color: var(--black);
+            text-shadow: none;
+            box-shadow: var(--box-glow);
+        }
+        
+        select {
+            padding: 15px;
+            background-color: var(--medium-gray);
+            border: 1px solid var(--light-gray);
+            border-radius: 5px;
+            margin-left: 10px;
+            font-size: 1rem;
+            color: var(--white);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        select:focus {
+            border-color: var(--neon-green);
+            box-shadow: var(--text-glow);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+        }
+        
+        .result-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--neon-green);
+            text-shadow: var(--text-glow);
+            letter-spacing: 1px;
+        }
+        
+        pre {
+            background-color: var(--medium-gray);
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            color: var(--neon-green);
+            border: 1px solid var(--light-gray);
+            text-shadow: 0 0 2px var(--neon-green);
+        }
+        /* Content Pages */
+        
+        .content-section {
+            background-color: var(--dark-gray);
+            border: 1px solid var(--neon-green);
+            border-radius: 5px;
+            padding: 40px;
+            box-shadow: var(--box-glow);
+            margin-bottom: 40px;
+        }
+        
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-green);
+            margin-bottom: 30px;
+            font-size: 2rem;
+            text-shadow: var(--text-glow);
+            letter-spacing: 1px;
+        }
+        
+        h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-green);
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            text-shadow: var(--text-glow);
+            letter-spacing: 1px;
+        }
+        
+        p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        strong {
+            color: var(--neon-green);
+        }
+        
+        a {
+            color: var(--neon-green);
+            text-decoration: underline;
+            transition: var(--transition);
+        }
+        
+        a:hover {
+            text-shadow: var(--text-glow);
+        }
+        
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .contact-card {
+            background-color: var(--medium-gray);
+            border: 1px solid var(--light-gray);
+            border-radius: 5px;
+            padding: 25px;
+            transition: var(--transition);
+        }
+        
+        .contact-card:hover {
+            border-color: var(--neon-green);
+            box-shadow: var(--text-glow);
+        }
+        /* Footer */
+        
+        footer {
+            background-color: var(--black);
+            border-top: 1px solid var(--neon-green);
+            padding: 30px 0;
+            text-align: center;
+            box-shadow: var(--box-glow);
+            margin-top: 50px;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .social-links {
+            display: flex;
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        
+        .social-links li {
+            margin: 0 15px;
+        }
+        
+        .social-links a {
+            color: var(--white);
+            font-size: 1.5rem;
+            transition: var(--transition);
+        }
+        
+        .social-links a:hover {
+            color: var(--neon-green);
+            text-shadow: var(--text-glow);
+        }
+        
+        .copyright {
+            color: var(--white);
+            font-size: 0.9rem;
+        }
+        /* Loading Spinner */
+        
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            margin: 20px auto;
+            border: 4px solid rgba(57, 255, 20, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--neon-green);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        /* Responsive Design */
+        
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+            }
+            .logo {
+                margin-bottom: 15px;
+            }
+            .nav-links {
+                width: 100%;
+                justify-content: space-around;
+            }
+            .nav-links li {
+                margin-left: 0;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .input-group {
+                flex-direction: column;
+            }
+            input[type="text"],
+            button,
+            select {
+                width: 100%;
+                border-radius: 5px;
+                margin: 5px 0;
+            }
+            select {
+                margin-left: 0;
+            }
+            .contact-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="container nav-container">
+            <a class="logo" onclick="showPage('tool')">DNS TOOL</a>
+            <ul class="nav-links">
+                <li><a onclick="showPage('tool')" class="nav-link active">Tool</a></li>
+                <li><a onclick="showPage('about')" class="nav-link">About</a></li>
+                <li><a onclick="showPage('credits')" class="nav-link">Credits</a></li>
+                <li><a onclick="showPage('contact')" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Tool Page -->
+    <div id="tool" class="page active">
+        <div class="page-header">
+            <div class="container">
+                <h1>DNS LOOKUP TOOL</h1>
+                <p class="subtitle">Perform DNS queries with this serverless tool. Get A, AAAA, MX, NS, and other DNS records instantly.</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="tool-container">
+                <div class="input-group">
+                    <input type="text" id="domainInput" placeholder="Enter domain name (e.g., example.com)">
+                    <button id="lookupButton">LOOKUP</button>
+                </div>
+                <div class="input-group">
+                    <select id="recordType">
+                        <option value="A">A (Address)</option>
+                        <option value="AAAA">AAAA (IPv6 Address)</option>
+                        <option value="CNAME">CNAME (Canonical Name)</option>
+                        <option value="MX">MX (Mail Exchange)</option>
+                        <option value="NS">NS (Name Server)</option>
+                        <option value="SOA">SOA (Start of Authority)</option>
+                        <option value="TXT">TXT (Text)</option>
+                    </select>
+                    <select id="dnsServer">
+                        <option value="cloudflare">Cloudflare DNS</option>
+                        <option value="google">Google DNS</option>
+                    </select>
+                </div>
+                <div class="result-container">
+                    <h3 class="result-title">QUERY RESULTS</h3>
+                    <div class="spinner" id="spinner"></div>
+                    <pre id="resultOutput">Enter a domain and click "LOOKUP" to see results.</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Page -->
+    <div id="about" class="page">
+        <div class="page-header">
+            <div class="container">
+                <h1>ABOUT THIS TOOL</h1>
+                <p class="subtitle">Learn more about the DNS Lookup Tool and its capabilities</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="content-section">
+                <h2>What is DNS Lookup?</h2>
+                <p>DNS (Domain Name System) is like the internet's phone book. It translates human-readable domain names like "example.com" into IP addresses that computers can understand. Our DNS Lookup Tool allows you to query various DNS records to understand
+                    how a domain is configured.</p>
+
+                <h3>Supported Record Types</h3>
+                <p><strong>A Records:</strong> Maps a domain to an IPv4 address</p>
+                <p><strong>AAAA Records:</strong> Maps a domain to an IPv6 address</p>
+                <p><strong>CNAME Records:</strong> Creates an alias for another domain</p>
+                <p><strong>MX Records:</strong> Specifies mail servers for the domain</p>
+                <p><strong>NS Records:</strong> Lists authoritative name servers</p>
+                <p><strong>SOA Records:</strong> Contains administrative information about the domain</p>
+                <p><strong>TXT Records:</strong> Stores text-based information, often used for verification</p>
+
+                <h3>How It Works</h3>
+                <p>This tool uses DNS-over-HTTPS (DoH) to perform lookups directly from your browser. It's completely serverless, meaning your queries are processed client-side and sent directly to trusted DNS providers like Cloudflare and Google.</p>
+
+                <p>The tool was created with ❤️ by <strong>Precious Grace Deborah Manucom</strong>, a passionate web developer and technology enthusiast dedicated to bringing functional, beautiful tools to the web community.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credits Page -->
+    <div id="credits" class="page">
+        <div class="page-header">
+            <div class="container">
+                <h1>CREDITS & ACKNOWLEDGMENTS</h1>
+                <p class="subtitle">Recognition for the tools and inspirations behind this project</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="content-section">
+                <h2>Project Inspiration</h2>
+                <p>This DNS Lookup Tool was inspired by Google's Dig Tool and other command-line DNS utilities. The goal was to create a modern, web-based alternative that's accessible to everyone, regardless of their technical background.</p>
+
+                <h3>Technologies Used</h3>
+                <p><strong>Frontend:</strong> Pure HTML5, CSS3, and JavaScript (ES6+)</p>
+                <p><strong>Styling:</strong> Custom CSS with CSS Grid and Flexbox</p>
+                <p><strong>Fonts:</strong> Google Fonts - Montserrat and Orbitron</p>
+                <p><strong>DNS Resolution:</strong> DNS-over-HTTPS (DoH) APIs</p>
+                <p><strong>Architecture:</strong> Serverless, client-side processing</p>
+
+                <h3>DNS Providers</h3>
+                <p><strong>Cloudflare DNS:</strong> 1.1.1.1 - Fast, privacy-focused DNS service</p>
+                <p><strong>Google DNS:</strong> 8.8.8.8 - Reliable public DNS service</p>
+
+                <h3>Special Thanks</h3>
+                <p>Thanks to the open-source community and the various web technologies that make projects like this possible. The DNS-over-HTTPS specification has been instrumental in enabling secure, browser-based DNS queries.</p>
+
+                <p>This project is built entirely with standard web technologies and requires no backend infrastructure, making it fast, secure, and easily deployable.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Page -->
+    <div id="contact" class="page">
+        <div class="page-header">
+            <div class="container">
+                <h1>GET IN TOUCH</h1>
+                <p class="subtitle">Connect with me for collaboration, questions, or just to say hello</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="content-section">
+                <h2>Let's Connect</h2>
+                <p>I'm always excited to connect with fellow developers, potential collaborators, and anyone interested in web development and technology. Feel free to reach out through any of the channels below.</p>
+
+                <div class="contact-info">
+                    <div class="contact-card">
+                        <h3>📧 Email</h3>
+                        <p>For professional inquiries, collaborations, or technical questions:</p>
+                        <a href="mailto:preciousmanucom@example.com">preciousmanucom@example.com</a>
+                    </div>
+
+                    <div class="contact-card">
+                        <h3>💼 LinkedIn</h3>
+                        <p>Let's connect professionally and stay updated on career developments:</p>
+                        <a href="https://linkedin.com/in/preciousmanucom" target="_blank">linkedin.com/in/preciousmanucom</a>
+                    </div>
+
+                    <div class="contact-card">
+                        <h3>🐙 GitHub</h3>
+                        <p>Check out my other projects and contributions to open source:</p>
+                        <a href="https://github.com/preciousmanucom" target="_blank">github.com/preciousmanucom</a>
+                    </div>
+
+                    <div class="contact-card">
+                        <h3>🌐 Portfolio</h3>
+                        <p>Explore more of my work and projects:</p>
+                        <a href="https://preciousmanucom.dev" target="_blank">preciousmanucom.dev</a>
+                    </div>
+                </div>
+
+                <h3>What I'm Up To</h3>
+                <p>I'm currently focused on building innovative web applications, exploring new technologies, and contributing to open-source projects. I'm particularly interested in:</p>
+                <p>• Modern web development frameworks and libraries</p>
+                <p>• Serverless architecture and JAMstack</p>
+                <p>• Developer tools and productivity applications</p>
+                <p>• UI/UX design and user experience optimization</p>
+
+                <p>Whether you want to collaborate on a project, discuss technology, or just chat about web development, I'd love to hear from you!</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-content">
+            <ul class="social-links">
+                <li><a href="https://github.com/preciousmanucom" target="_blank">GitHub</a></li>
+                <li><a href="https://facebook.com/" target="_blank">Facebook</a></li>
+                <li><a href="https://linkedin.com/in/preciousmanucom" target="_blank">LinkedIn</a></li>
+            </ul>
+            <p class="copyright">&copy; 2025 DNS Lookup Tool | Precious Manucom</p>
+        </div>
+    </footer>
+
+    <script>
+        // Page Navigation System
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+
+            // Update active nav link
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // DNS Lookup Functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const lookupButton = document.getElementById('lookupButton');
+            const domainInput = document.getElementById('domainInput');
+            const recordType = document.getElementById('recordType');
+            const dnsServer = document.getElementById('dnsServer');
+            const resultOutput = document.getElementById('resultOutput');
+            const spinner = document.getElementById('spinner');
+
+            lookupButton.addEventListener('click', performLookup);
+            domainInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') performLookup();
+            });
+
+            const getDohEndpoint = (provider) => {
+                const endpoints = {
+                    google: 'https://dns.google/resolve',
+                    cloudflare: 'https://cloudflare-dns.com/dns-query'
+                };
+                return endpoints[provider];
+            };
+
+            async function performLookup() {
+                const domain = domainInput.value.trim();
+                const type = recordType.value;
+                const provider = dnsServer.value;
+                const endpoint = getDohEndpoint(provider);
+
+                if (!/^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i.test(domain)) {
+                    resultOutput.textContent = 'Invalid domain name format.';
+                    return;
+                }
+
+                spinner.style.display = 'block';
+                resultOutput.textContent = 'Querying...';
+
+                try {
+                    const url = `${endpoint}?name=${domain}&type=${type}`;
+                    const response = await fetch(url, {
+                        headers: {
+                            'Accept': 'application/dns-json'
+                        }
+                    });
+
+                    if (!response.ok) throw new Error(`Status ${response.status}`);
+
+                    const data = await response.json();
+                    renderResults(data, provider);
+                } catch (error) {
+                    resultOutput.textContent = `Error: ${error.message}\nCheck your connection or CORS settings.`;
+                } finally {
+                    spinner.style.display = 'none';
+                }
+            }
+
+            function renderResults(data, provider) {
+                if (!data.Answer) {
+                    resultOutput.textContent = 'No DNS records found.';
+                    return;
+                }
+
+                let output = `;; Query Results from ${provider.toUpperCase()}\n\n`;
+                data.Answer.forEach((rec) => {
+                    output += `${rec.name} \t ${rec.TTL} \t ${rec.type} \t ${rec.data}\n`;
+                });
+
+                resultOutput.textContent = output;
+            }
+        });
+    </script>
+</body>
+
+</html>
